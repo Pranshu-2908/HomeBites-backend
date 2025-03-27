@@ -2,8 +2,10 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
-import router from "./routes/userRoute";
+import userRouter from "./routes/userRoute";
+import mealRouter from "./routes/mealsRoute";
 import connectDB from "./config/db";
+import cookieParser from "cookie-parser";
 dotenv.config({ path: "./.env" });
 
 const app = express();
@@ -16,10 +18,13 @@ console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true })); // To parse form-data
 connectDB();
 
 // APP ROUTES
-app.use("/api/v1/auth", router);
+app.use("/api/v1/auth", userRouter);
+app.use("/api/v1/meal", mealRouter);
 
 // SERVER
 app.listen(PORT, () => {

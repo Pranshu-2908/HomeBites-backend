@@ -17,7 +17,7 @@ export const registerUser = async (
     const userExists = await User.findOne({ email });
     if (userExists) {
       res.status(400).json({
-        stauts: false,
+        status: false,
         message: "User already exists",
       });
       return;
@@ -43,12 +43,14 @@ export const registerUser = async (
     if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
     res.cookie("jwt", token, cookieOptions);
     res.status(201).json({
+      success: true,
       user,
       message: "User created successfully",
       token,
     });
   } catch (error: any) {
     res.status(400).json({
+      success: false,
       message: "Invalid user data",
       error: error.message,
     });
@@ -69,7 +71,17 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
     const token = generateToken(user._id.toString());
-    res.json({
+    const cookieOptions: CookieOptions = {
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    };
+    if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+    res.cookie("jwt", token, cookieOptions);
+    console.log("🔹 Cookies Sent:", res.getHeaders()["set-cookie"]);
+    res.status(201).json({
+      success: true,
       _id: user._id.toString(),
       name: user.name,
       email: user.email,
@@ -79,9 +91,22 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error: any) {
     res.status(400).json({
+      success: false,
       message: "Login failed",
       error: error.message,
     });
+  }
+};
+
+export const checkAuth = async (req: Request, res: Response): Promise<void> => {
+  const token = req.cookies?.token;
+  if (!token) res.json({ isAuthenticated: false });
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET || "your_secret_key");
+    res.json({ isAuthenticated: true });
+  } catch {
+    res.status(401).json({ isAuthenticated: false });
   }
 };
 export const logout = async (req: Request, res: Response): Promise<void> => {

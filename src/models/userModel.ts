@@ -7,9 +7,9 @@ export interface IUser extends mongoose.Document {
   email: string;
   password: string;
   role: "chef" | "customer";
+  phoneNumber?: string;
   location?: string;
   bio?: string;
-  cookingStyle?: string;
   certifications?: string[];
   profilePicture?: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -35,9 +35,9 @@ const UserSchema = new mongoose.Schema(
       enum: ["chef", "customer"],
       required: true,
     },
+    phoneNumber: String,
     location: String,
     bio: String,
-    cookingStyle: String,
     certifications: [String],
     profilePicture: String,
   },
