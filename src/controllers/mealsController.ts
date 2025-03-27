@@ -5,11 +5,17 @@ import { AuthRequest } from "../middleware/authMiddleware";
 // (chefs)
 export const createMeal = async (req: Request, res: Response) => {
   try {
-    const { name, description, price, category, images, preparationTime } =
-      req.body;
-    const chefId = (req as AuthRequest).user?.id; // Get chef's ID from authenticated user
+    const {
+      name,
+      description,
+      price,
+      category,
+      images,
+      preparationTime,
+      quantity,
+    } = req.body;
+    const chefId = (req as AuthRequest).user?.id;
 
-    // Ensure only home chefs can create meals
     if ((req as AuthRequest).user?.role !== "chef") {
       return res.status(403).json({ message: "Only home chefs can add meals" });
     }
@@ -22,6 +28,7 @@ export const createMeal = async (req: Request, res: Response) => {
       category,
       images,
       preparationTime,
+      quantity,
     });
 
     await newMeal.save();
@@ -35,7 +42,7 @@ export const createMeal = async (req: Request, res: Response) => {
   }
 };
 
-// (Public route)
+// all access
 export const getAllMeals = async (req: Request, res: Response) => {
   try {
     const meals = await Meal.find().populate("chefId", "name profilePicture");
@@ -48,7 +55,8 @@ export const getAllMeals = async (req: Request, res: Response) => {
 // single meal by ID
 export const getMealById = async (req: Request, res: Response) => {
   try {
-    const { mealId } = req.params;
+    const { id: mealId } = req.params;
+    console.log(mealId);
     const meal = await Meal.findById(mealId).populate(
       "chefId",
       "name profilePicture"
@@ -69,7 +77,7 @@ export const getMealById = async (req: Request, res: Response) => {
 // (Only by the chef who posted it)
 export const updateMeal = async (req: Request, res: Response) => {
   try {
-    const { mealId } = req.params;
+    const { id: mealId } = req.params;
     const chefId = (req as AuthRequest).user?.id;
 
     const meal = await Meal.findById(mealId);
@@ -101,7 +109,7 @@ export const updateMeal = async (req: Request, res: Response) => {
 // (Only by the chef who posted it)
 export const deleteMeal = async (req: Request, res: Response) => {
   try {
-    const { mealId } = req.params;
+    const { id: mealId } = req.params;
     const chefId = (req as AuthRequest).user?.id; // Authenticated user (must be the meal's creator)
 
     const meal = await Meal.findById(mealId);
@@ -111,7 +119,6 @@ export const deleteMeal = async (req: Request, res: Response) => {
         .json({ success: false, message: "Meal not found" });
     }
 
-    // Ensure only the meal's creator can delete it
     if (meal.chefId.toString() !== chefId) {
       return res
         .status(403)

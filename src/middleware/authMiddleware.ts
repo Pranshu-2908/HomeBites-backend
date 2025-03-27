@@ -12,9 +12,7 @@ export const protectRoute = async (
   next: NextFunction
 ) => {
   try {
-    console.log("Cookies received in middleware:", req.cookies);
     const token = req.cookies?.jwt;
-    console.log(token);
     if (!token) {
       return res.status(401).json({ message: "Unauthorized - No token found" });
     }

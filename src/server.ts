@@ -4,6 +4,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import userRouter from "./routes/userRoute";
 import mealRouter from "./routes/mealsRoute";
+import orderRouter from "./routes/orderRoute";
 import connectDB from "./config/db";
 import cookieParser from "cookie-parser";
 dotenv.config({ path: "./.env" });
@@ -25,6 +26,7 @@ connectDB();
 // APP ROUTES
 app.use("/api/v1/auth", userRouter);
 app.use("/api/v1/meal", mealRouter);
+app.use("/api/v1/order", orderRouter);
 
 // SERVER
 app.listen(PORT, () => {
