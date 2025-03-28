@@ -42,7 +42,7 @@ const MealSchema = new Schema<IMeal>(
     quantity: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0,
     },
     images: {
       type: [String],

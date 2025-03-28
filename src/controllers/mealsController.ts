@@ -92,8 +92,11 @@ export const updateMeal = async (req: Request, res: Response) => {
         .status(403)
         .json({ success: false, message: "Unauthorized to update this meal" });
     }
-
-    const updatedMeal = await Meal.findByIdAndUpdate(mealId, req.body, {
+    const mealData = req.body;
+    if (mealData.quantity > 0) {
+      mealData.availability = true;
+    }
+    const updatedMeal = await Meal.findByIdAndUpdate(mealId, mealData, {
       new: true,
     });
     res.status(200).json({

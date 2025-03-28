@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: true })); // To parse form-data
 connectDB();
 
 // APP ROUTES
-app.use("/api/v1/auth", userRouter);
+app.use("/api/v1/user", userRouter);
 app.use("/api/v1/meal", mealRouter);
 app.use("/api/v1/order", orderRouter);
 

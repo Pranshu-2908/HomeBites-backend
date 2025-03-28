@@ -4,13 +4,41 @@ import Meal from "../models/mealsModel";
 import { AuthRequest } from "../middleware/authMiddleware";
 import User from "../models/userModel";
 
+const isWithinWorkingHours = (
+  preferredTime: Date,
+  workingHours: any
+): boolean => {
+  const preferredHour = preferredTime.getHours();
+  const preferredMinute = preferredTime.getMinutes();
+
+  const startTime = workingHours.startHour * 60 + workingHours.startMinute;
+  const endTime = workingHours.endHour * 60 + workingHours.endMinute;
+  const userTime = preferredHour * 60 + preferredMinute;
+
+  return userTime >= startTime && userTime <= endTime;
+};
+
 // Place an Order
 export const placeOrder = async (req: AuthRequest, res: Response) => {
   try {
     if (req.user.role !== "customer") {
       return res.status(403).json({ success: false, message: "Unauthorized" });
     }
-    const { meals, chefId } = req.body;
+    const { meals, preferredTime } = req.body;
+    const { hour, minute } = req.body.preferredTime;
+
+    // Get today's date
+    const now = new Date();
+    const time = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      hour, // User input hour (00-23)
+      minute, // User input minute (00-59)
+      0 // Set seconds to 0
+    );
+
+    let chefId: string | null = null;
     if (!meals || meals.length === 0) {
       return res.status(400).json({
         success: false,
@@ -27,14 +55,37 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
           .json({ success: false, message: `Meal not found: ${item.mealId}` });
       }
       totalAmount += meal.price * item.quantity;
+      meal.quantity -= item.quantity;
+      if (meal.quantity <= 0) {
+        meal.availability = false;
+      }
+      await meal.save();
+      if (!chefId) chefId = meal.chefId.toString();
+      if (chefId !== meal.chefId.toString()) {
+        return res
+          .status(400)
+          .json({ message: "All meals must be from the same chef." });
+      }
     }
+    const chef = await User.findById(chefId);
+    if (!chef || chef.role !== "chef") {
+      return res.status(400).json({ message: "Invalid chef selected." });
+    }
+    const { workingHours } = chef;
+    // Check if within working hours
+    if (!isWithinWorkingHours(time, workingHours)) {
+      return res.status(400).json({
+        message: "Selected time is outside the chef's working hours.",
+      });
+    }
+
     const newOrder = await Order.create({
       customerId: req.user._id,
       chefId,
       meals,
       totalAmount,
       status: "pending",
-      createdAt: new Date(),
+      preferredTime,
     });
 
     res.status(201).json({ success: true, order: newOrder });

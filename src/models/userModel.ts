@@ -12,6 +12,12 @@ export interface IUser extends mongoose.Document {
   bio?: string;
   certifications?: string[];
   profilePicture?: string;
+  workingHours?: {
+    startHour: number;
+    startMinute: number;
+    endHour: number;
+    endMinute: number;
+  };
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -40,6 +46,20 @@ const UserSchema = new mongoose.Schema(
     bio: String,
     certifications: [String],
     profilePicture: String,
+    workingHours: {
+      startHour: {
+        type: Number,
+      },
+      startMinute: {
+        type: Number,
+      },
+      endHour: {
+        type: Number,
+      },
+      endMinute: {
+        type: Number,
+      },
+    },
   },
   {
     timestamps: true,

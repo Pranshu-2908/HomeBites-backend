@@ -5,7 +5,10 @@ export interface IMealOrder {
   mealId: mongoose.Types.ObjectId;
   quantity: number;
 }
-
+export interface IPreferredTime {
+  hour: number;
+  minute: number;
+}
 export interface IOrder extends Document {
   customerId: mongoose.Types.ObjectId;
   chefId: mongoose.Types.ObjectId;
@@ -13,6 +16,7 @@ export interface IOrder extends Document {
   totalAmount: number;
   status: "pending" | "accepted" | "prepared" | "delivered" | "cancelled";
   createdAt: Date;
+  preferredTime: IPreferredTime;
   calculateTotalAmount(): Promise<number>;
   updateStatus(newStatus: string): Promise<void>;
 }
@@ -44,13 +48,30 @@ const orderSchema = new Schema<IOrder>(
         _id: false,
       },
     ],
+    preferredTime: {
+      hour: {
+        type: Number,
+        required: true,
+      },
+      minute: {
+        type: Number,
+        required: true,
+      },
+    },
     totalAmount: {
       type: Number,
       required: true,
     },
     status: {
       type: String,
-      enum: ["pending", "accepted", "prepared", "delivered", "cancelled"],
+      enum: [
+        "pending",
+        "accepted",
+        "rejected",
+        "prepared",
+        "delivered",
+        "cancelled",
+      ],
       default: "pending",
     },
     createdAt: {
