@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import Order from "../models/orderModel";
 import Meal from "../models/mealsModel";
 import { AuthRequest } from "../middleware/authMiddleware";
@@ -27,15 +27,14 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
     const { meals, preferredTime } = req.body;
     const { hour, minute } = req.body.preferredTime;
 
-    // Get today's date
     const now = new Date();
     const time = new Date(
       now.getFullYear(),
       now.getMonth(),
       now.getDate(),
-      hour, // User input hour (00-23)
-      minute, // User input minute (00-59)
-      0 // Set seconds to 0
+      hour,
+      minute,
+      0
     );
 
     let chefId: string | null = null;
