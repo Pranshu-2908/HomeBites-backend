@@ -14,7 +14,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // MIDDLEWARES
-app.use(cors());
+app.use(cors({ origin: "http://localhost:3001", credentials: true }));
 app.use(express.json());
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "development") {

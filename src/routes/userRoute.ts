@@ -3,7 +3,7 @@ import {
   registerUser,
   loginUser,
   logout,
-  checkAuth,
+  getMe,
 } from "../controllers/authController";
 import { protectRoute } from "../middleware/authMiddleware";
 import { updateProfile } from "../controllers/userContoller";
@@ -13,6 +13,6 @@ const router = express.Router();
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/logout", logout);
-router.get("/check-auth", checkAuth);
+router.get("/me", protectRoute as any, getMe as any);
 router.put("/profile", protectRoute as any, updateProfile as any);
 export default router;

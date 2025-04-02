@@ -1,6 +1,7 @@
 import { CookieOptions, Request, Response } from "express";
 import User from "../models/userModel";
 import jwt from "jsonwebtoken";
+import { AuthRequest } from "../middleware/authMiddleware";
 
 const generateToken = (userId: string) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET || "", {
@@ -82,10 +83,12 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     console.log("🔹 Cookies Sent:", res.getHeaders()["set-cookie"]);
     res.status(201).json({
       success: true,
-      _id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      role: user.role,
+      user: {
+        _id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
       token,
       message: "Logged in successfully",
     });
@@ -98,16 +101,14 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const checkAuth = async (req: Request, res: Response): Promise<void> => {
-  const token = req.cookies?.token;
-  if (!token) res.json({ isAuthenticated: false });
+export const getMe = async (req: AuthRequest, res: Response) => {
+  const user = await User.findById(req.user.id).select("-password");
 
-  try {
-    jwt.verify(token, process.env.JWT_SECRET || "your_secret_key");
-    res.json({ isAuthenticated: true });
-  } catch {
-    res.status(401).json({ isAuthenticated: false });
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
   }
+  res.status(200).json(user);
 };
 export const logout = async (req: Request, res: Response): Promise<void> => {
   res.cookie("jwt", "", {
