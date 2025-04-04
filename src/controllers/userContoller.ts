@@ -8,10 +8,40 @@ import cloudinary from "../utils/cloudinary";
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user._id; // Get user ID from auth middleware
-    const { phoneNumber, location, bio, certifications, workingHours } =
-      req.body;
+    const {
+      name,
+      phoneNumber,
+      location,
+      bio,
+      certifications,
+      startHour,
+      startMinute,
+      endHour,
+      endMinute,
+    } = req.body;
     let profilePicture;
+    const updateFields: any = {};
 
+    if (name) updateFields.name = name;
+    if (phoneNumber) updateFields.phoneNumber = phoneNumber;
+    if (location) updateFields.location = location;
+    if (bio) updateFields.bio = bio;
+    if (certifications) updateFields.certifications = certifications;
+
+    // Add workingHours only if at least one part is present
+    if (
+      startHour !== undefined ||
+      startMinute !== undefined ||
+      endHour !== undefined ||
+      endMinute !== undefined
+    ) {
+      updateFields.workingHours = {
+        ...(startHour !== undefined && { startHour: Number(startHour) }),
+        ...(startMinute !== undefined && { startMinute: Number(startMinute) }),
+        ...(endHour !== undefined && { endHour: Number(endHour) }),
+        ...(endMinute !== undefined && { endMinute: Number(endMinute) }),
+      };
+    }
     if (req.file) {
       const file = getDataUri(req.file); // convert to base64 Data URI
       const cloudinaryResponse = await cloudinary.uploader.upload(
@@ -20,22 +50,22 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
           folder: "homebites/client/public/profile-pictures",
         }
       );
-      profilePicture = cloudinaryResponse.secure_url; // get the uploaded image URL
+      profilePicture = cloudinaryResponse.secure_url;
+      updateFields.profilePicture = profilePicture;
     }
 
+    const workingHours = {
+      startHour: Number(startHour),
+      startMinute: Number(startMinute),
+      endHour: Number(endHour),
+      endMinute: Number(endMinute),
+    };
+    console.log(workingHours);
     // Find user & update profile
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        phoneNumber,
-        location,
-        bio,
-        certifications,
-        ...(profilePicture && { profilePicture }),
-        workingHours,
-      },
-      { new: true, runValidators: true }
-    );
+    const updatedUser = await User.findByIdAndUpdate(userId, updateFields, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedUser) {
       return res

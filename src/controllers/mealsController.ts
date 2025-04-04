@@ -21,14 +21,14 @@ export const createMeal = async (req: Request, res: Response) => {
     if ((req as AuthRequest).user?.role !== "chef") {
       return res.status(403).json({ message: "Only home chefs can add meals" });
     }
-    const files = (req.files as Express.Multer.File[]) || [];
-    if (files.length === 0) {
+    const images = (req.files as Express.Multer.File[]) || [];
+    if (images.length === 0) {
       return res
         .status(400)
         .json({ message: "At least one image is required" });
     }
 
-    const uploadFiles = files.map((file) => {
+    const uploadFiles = images.map((file) => {
       const fileUri = getDataUri(file);
       return cloudinary.uploader.upload(fileUri.content!);
     });
@@ -53,6 +53,7 @@ export const createMeal = async (req: Request, res: Response) => {
       meal: newMeal,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };
