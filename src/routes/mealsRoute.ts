@@ -6,6 +6,7 @@ import {
   getMealById,
   updateMeal,
   deleteMeal,
+  getChefMeals,
 } from "../controllers/mealsController";
 import { arrayUpload } from "../middleware/multerMiddleware";
 
@@ -15,9 +16,10 @@ const router = express.Router();
 router
   .post("/", protectRoute as any, arrayUpload, createMeal as any)
   .get("/", getAllMeals);
+router.get("/chef", protectRoute as any, getChefMeals as any);
+
 router
   .get("/:id", getMealById as any)
   .delete("/:id", protectRoute as any, deleteMeal as any)
   .put("/:id", protectRoute as any, arrayUpload, updateMeal as any);
-
 export default router;
