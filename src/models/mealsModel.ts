@@ -6,8 +6,9 @@ export interface IMeal extends Document {
   description: string;
   price: number;
   category: "vegetarian" | "non-veg" | "vegan";
+  cuisine: String;
   images: string[];
-  preparationTime: number; // (mins)
+  preparationTime: number;
   availability: boolean;
   quantity: number;
   createdAt: Date;
@@ -39,6 +40,10 @@ const MealSchema = new Schema<IMeal>(
       enum: ["vegetarian", "non-veg", "vegan"],
       required: true,
     },
+    cuisine: {
+      type: String,
+      required: true,
+    },
     quantity: {
       type: Number,
       required: true,
@@ -60,6 +65,11 @@ const MealSchema = new Schema<IMeal>(
   },
   { timestamps: true }
 );
+
+MealSchema.pre("findOneAndUpdate", function (next) {
+  this.set({ updatedAt: Date.now() });
+  next();
+});
 
 const Meal = mongoose.model<IMeal>("Meal", MealSchema);
 export default Meal;

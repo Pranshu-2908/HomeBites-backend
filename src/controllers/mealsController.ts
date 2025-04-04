@@ -46,9 +46,9 @@ export const createMeal = async (req: Request, res: Response) => {
 export const getAllMeals = async (req: Request, res: Response) => {
   try {
     const meals = await Meal.find().populate("chefId", "name profilePicture");
-    res.status(200).json({ success: true, meals });
+    res.status(200).json({ meals });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error", error });
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
@@ -68,7 +68,7 @@ export const getMealById = async (req: Request, res: Response) => {
         .json({ success: false, message: "Meal not found" });
     }
 
-    res.status(200).json(meal);
+    res.status(200).json({ meal });
   } catch (error) {
     res.status(500).json({ success: true, message: "Server error", error });
   }
@@ -96,9 +96,13 @@ export const updateMeal = async (req: Request, res: Response) => {
     if (mealData.quantity > 0) {
       mealData.availability = true;
     }
-    const updatedMeal = await Meal.findByIdAndUpdate(mealId, mealData, {
-      new: true,
-    });
+    const updatedMeal = await Meal.findByIdAndUpdate(
+      mealId,
+      { $set: { ...mealData, updatedAt: Date.now() } },
+      {
+        new: true,
+      }
+    );
     res.status(200).json({
       success: true,
       message: "Meal updated successfully",

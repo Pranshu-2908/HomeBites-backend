@@ -101,15 +101,6 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const getMe = async (req: AuthRequest, res: Response) => {
-  const user = await User.findById(req.user.id).select("-password");
-
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
-  }
-  res.status(200).json(user);
-};
 export const logout = async (req: Request, res: Response): Promise<void> => {
   res.cookie("jwt", "", {
     expires: new Date(0),
