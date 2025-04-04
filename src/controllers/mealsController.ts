@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import Meal from "../models/mealsModel";
 import { AuthRequest } from "../middleware/authMiddleware";
+import getDataUri from "../utils/dataURI";
+import cloudinary from "../utils/cloudinary";
 
 // (chefs)
 export const createMeal = async (req: Request, res: Response) => {
@@ -10,23 +12,36 @@ export const createMeal = async (req: Request, res: Response) => {
       description,
       price,
       category,
-      images,
       preparationTime,
       quantity,
+      cuisine,
     } = req.body;
     const chefId = (req as AuthRequest).user?.id;
 
     if ((req as AuthRequest).user?.role !== "chef") {
       return res.status(403).json({ message: "Only home chefs can add meals" });
     }
+    const files = (req.files as Express.Multer.File[]) || [];
+    if (files.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "At least one image is required" });
+    }
 
+    const uploadFiles = files.map((file) => {
+      const fileUri = getDataUri(file);
+      return cloudinary.uploader.upload(fileUri.content!);
+    });
+    const uploadedImages = await Promise.all(uploadFiles);
+    const imageUrls = uploadedImages.map((file) => file.secure_url);
     const newMeal = new Meal({
       chefId,
       name,
       description,
       price,
       category,
-      images,
+      cuisine,
+      images: imageUrls,
       preparationTime,
       quantity,
     });
@@ -45,7 +60,7 @@ export const createMeal = async (req: Request, res: Response) => {
 // all access
 export const getAllMeals = async (req: Request, res: Response) => {
   try {
-    const meals = await Meal.find().populate("chefId", "name profilePicture");
+    const meals = await Meal.find().populate("chefId", "name");
     res.status(200).json({ meals });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -59,7 +74,7 @@ export const getMealById = async (req: Request, res: Response) => {
     console.log(mealId);
     const meal = await Meal.findById(mealId).populate(
       "chefId",
-      "name profilePicture"
+      "name profilePicture workingHours bio location"
     );
 
     if (!meal) {
