@@ -116,6 +116,47 @@ export const getOrders = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getChefOrdersByStatus = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const chefId = req.user?._id;
+
+    const orders = await Order.find({ chefId })
+      .populate("customerId", "name email")
+      .populate("meals.mealId", "name price");
+    if (!orders) return res.status(404).json({ message: "No orders found" });
+    const pendingOrders = orders.filter((order) => order.status === "pending");
+    const acceptedOrders = orders.filter(
+      (order) => order.status === "accepted"
+    );
+    const preparingOrders = orders.filter(
+      (order) => order.status === "preparing"
+    );
+    const completedOrders = orders.filter(
+      (order) => order.status === "completed"
+    );
+    const cancelledOrders = orders.filter(
+      (order) => order.status === "cancelled"
+    );
+    const rejectedOrders = orders.filter(
+      (order) => order.status === "rejected"
+    );
+    res.status(200).json({
+      success: true,
+      pendingOrders,
+      acceptedOrders,
+      preparingOrders,
+      completedOrders,
+      cancelledOrders,
+      rejectedOrders,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching orders", error });
+  }
+};
+
 // Update Order Status (Chef Only)
 export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
   try {
@@ -131,7 +172,7 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
 
     // CONFUSION - how to know order delivered?
 
-    if (!["accepted", "prepared", "delivered"].includes(status)) {
+    if (!["accepted", "preparing", "completed", "rejected"].includes(status)) {
       return res.status(400).json({ message: "Invalid status update" });
     }
 

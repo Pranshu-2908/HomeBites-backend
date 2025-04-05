@@ -14,7 +14,13 @@ export interface IOrder extends Document {
   chefId: mongoose.Types.ObjectId;
   meals: IMealOrder[];
   totalAmount: number;
-  status: "pending" | "accepted" | "prepared" | "delivered" | "cancelled";
+  status:
+    | "pending"
+    | "accepted"
+    | "preparing"
+    | "completed"
+    | "cancelled"
+    | "rejected";
   createdAt: Date;
   preferredTime: IPreferredTime;
   calculateTotalAmount(): Promise<number>;
@@ -68,8 +74,8 @@ const orderSchema = new Schema<IOrder>(
         "pending",
         "accepted",
         "rejected",
-        "prepared",
-        "delivered",
+        "preparing",
+        "completed",
         "cancelled",
       ],
       default: "pending",
@@ -99,9 +105,14 @@ orderSchema.methods.updateStatus = async function (
   newStatus: string
 ): Promise<void> {
   if (
-    !["pending", "accepted", "prepared", "delivered", "cancelled"].includes(
-      newStatus
-    )
+    ![
+      "pending",
+      "accepted",
+      "preparing",
+      "completed",
+      "cancelled",
+      "rejected",
+    ].includes(newStatus)
   ) {
     throw new Error("Invalid status update");
   }

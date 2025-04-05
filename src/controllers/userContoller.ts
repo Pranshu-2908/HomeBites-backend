@@ -7,7 +7,7 @@ import cloudinary from "../utils/cloudinary";
 // Update User Profile
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user._id; // Get user ID from auth middleware
+    const userId = req.user._id;
     const {
       name,
       phoneNumber,
