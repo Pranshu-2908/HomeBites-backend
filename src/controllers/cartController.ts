@@ -66,3 +66,138 @@ export const deleteCart = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to delete cart." });
   }
 };
+export const addToCart = async (req: Request, res: Response) => {
+  const userId = (req as AuthRequest).user._id;
+  const { mealId, quantity } = req.body;
+
+  try {
+    const meal = await Meal.findById(mealId).select("name price quantity");
+    if (!meal) return res.status(404).json({ message: "Meal not found" });
+
+    let cart = await Cart.findOne({ user: userId });
+    if (!cart) {
+      cart = new Cart({ user: userId, items: [] });
+    }
+
+    const index = cart.items.findIndex((item) => item.mealId.equals(mealId));
+    let updatedItem;
+
+    if (index > -1) {
+      cart.items[index].quantity = Math.min(
+        cart.items[index].quantity + quantity,
+        meal.quantity
+      );
+      cart.items[index].availableQty = meal.quantity;
+      updatedItem = cart.items[index];
+    } else {
+      const newItem = {
+        mealId,
+        name: meal.name,
+        price: meal.price,
+        quantity: Math.min(quantity, meal.quantity),
+        availableQty: meal.quantity,
+      };
+      cart.items.push(newItem);
+      updatedItem = newItem;
+    }
+
+    await cart.save();
+    res
+      .status(200)
+      .json({ message: "Item added/updated successfully", item: updatedItem });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to add/update item" });
+  }
+};
+
+export const increaseQty = async (req: Request, res: Response) => {
+  const userId = (req as AuthRequest).user._id;
+  const { mealId } = req.body;
+
+  try {
+    const cart = await Cart.findOne({ user: userId });
+    const meal = await Meal.findById(mealId).select("quantity");
+    if (!cart || !meal) return res.status(404).json({ message: "Not found" });
+
+    const item = cart.items.find((item) => item.mealId.equals(mealId));
+    if (item) {
+      if (item.quantity < meal.quantity) {
+        item.quantity += 1;
+      }
+      item.availableQty = meal.quantity;
+      await cart.save();
+    }
+
+    res.status(200).json({ message: "Quantity increased", item });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to increase quantity" });
+  }
+};
+
+export const decreaseQty = async (req: Request, res: Response) => {
+  const userId = (req as AuthRequest).user._id;
+  const { mealId } = req.body;
+
+  try {
+    const cart = await Cart.findOne({ user: userId });
+    const meal = await Meal.findById(mealId).select("quantity");
+    if (!cart || !meal) return res.status(404).json({ message: "Not found" });
+
+    const index = cart.items.findIndex((item) => item.mealId.equals(mealId));
+    let removed = false;
+
+    if (index > -1) {
+      if (cart.items[index].quantity > 1) {
+        cart.items[index].quantity -= 1;
+        cart.items[index].availableQty = meal.quantity;
+      } else {
+        cart.items.splice(index, 1);
+        removed = true;
+      }
+
+      await cart.save();
+    }
+
+    res.status(200).json({
+      message: "Quantity decreased or item removed",
+      item: cart.items[index] || null,
+      removed,
+      mealId,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to decrease quantity" });
+  }
+};
+
+export const removeItem = async (req: Request, res: Response) => {
+  const userId = (req as AuthRequest).user._id;
+  const { mealId } = req.body;
+
+  try {
+    const cart = await Cart.findOne({ user: userId });
+    if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+    cart.items = cart.items.filter((item) => !item.mealId.equals(mealId));
+    await cart.save();
+
+    res.status(200).json({ message: "Item removed", mealId });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to remove item" });
+  }
+};
+
+export const clearCart = async (req: Request, res: Response) => {
+  const userId = (req as AuthRequest).user._id;
+
+  try {
+    const cart = await Cart.findOne({ user: userId });
+    if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+    cart.items = [];
+    await cart.save();
+
+    res.status(200).json({ message: "Cart cleared", cart });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to clear cart" });
+  }
+};
