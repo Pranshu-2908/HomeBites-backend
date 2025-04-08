@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface CartItem {
   mealId: mongoose.Types.ObjectId;
+  chefId: mongoose.Types.ObjectId;
   name: string;
   price: number;
   quantity: number;
@@ -24,6 +25,7 @@ const CartSchema = new Schema<CartDocument>(
     items: [
       {
         mealId: mongoose.Schema.Types.ObjectId,
+        chefId: mongoose.Schema.Types.ObjectId,
         name: String,
         price: Number,
         quantity: Number,

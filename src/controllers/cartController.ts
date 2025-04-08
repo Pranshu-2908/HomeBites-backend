@@ -18,6 +18,7 @@ export const getCart = async (req: Request, res: Response) => {
 
         return {
           mealId: item.mealId,
+          chefId: item.chefId,
           name: item.name,
           price: item.price,
           quantity: item.quantity,
@@ -65,7 +66,9 @@ export const addToCart = async (req: Request, res: Response) => {
   const { mealId, quantity } = req.body;
 
   try {
-    const meal = await Meal.findById(mealId).select("name price quantity");
+    const meal = await Meal.findById(mealId).select(
+      "name price quantity chefId"
+    );
     if (!meal) return res.status(404).json({ message: "Meal not found" });
 
     let cart = await Cart.findOne({ user: userId });
@@ -86,6 +89,7 @@ export const addToCart = async (req: Request, res: Response) => {
     } else {
       const newItem = {
         mealId,
+        chefId: meal.chefId,
         name: meal.name,
         price: meal.price,
         quantity: Math.min(quantity, meal.quantity),
@@ -94,7 +98,7 @@ export const addToCart = async (req: Request, res: Response) => {
       cart.items.push(newItem);
       updatedItem = newItem;
     }
-
+    console.log(updatedItem);
     await cart.save();
     res
       .status(200)
