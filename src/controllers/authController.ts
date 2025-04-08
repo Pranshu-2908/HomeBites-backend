@@ -80,7 +80,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     };
     if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
     res.cookie("jwt", token, cookieOptions);
-    console.log("🔹 Cookies Sent:", res.getHeaders()["set-cookie"]);
+    // console.log("🔹 Cookies Sent:", res.getHeaders()["set-cookie"]);
     res.status(201).json({
       success: true,
       user: {

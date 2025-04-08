@@ -60,7 +60,6 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       endHour: Number(endHour),
       endMinute: Number(endMinute),
     };
-    console.log(workingHours);
     // Find user & update profile
     const updatedUser = await User.findByIdAndUpdate(userId, updateFields, {
       new: true,

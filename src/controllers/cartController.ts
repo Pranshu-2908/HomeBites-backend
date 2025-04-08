@@ -14,7 +14,6 @@ export const getCart = async (req: Request, res: Response) => {
     }
     const completeItems = await Promise.all(
       cart.items.map(async (item, ind) => {
-        console.log(`item ${ind + 1}`, item);
         const meal = await Meal.findById(item.mealId).select("quantity");
 
         return {
@@ -26,7 +25,6 @@ export const getCart = async (req: Request, res: Response) => {
         };
       })
     );
-    console.log(completeItems);
     res.status(200).json({ items: completeItems });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch cart." });
@@ -49,7 +47,6 @@ export const saveCart = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "Cart saved successfully." });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: "Failed to save cart." });
   }
 };
@@ -57,12 +54,9 @@ export const saveCart = async (req: Request, res: Response) => {
 export const deleteCart = async (req: Request, res: Response) => {
   try {
     const userId = (req as AuthRequest).user._id;
-    console.log(userId);
     await Cart.findOneAndDelete({ user: userId });
-    console.log("deleted");
     res.status(200).json({ message: "Cart deleted successfully." });
   } catch (error) {
-    console.log("not");
     res.status(500).json({ message: "Failed to delete cart." });
   }
 };
@@ -183,21 +177,5 @@ export const removeItem = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Item removed", mealId });
   } catch (err) {
     res.status(500).json({ message: "Failed to remove item" });
-  }
-};
-
-export const clearCart = async (req: Request, res: Response) => {
-  const userId = (req as AuthRequest).user._id;
-
-  try {
-    const cart = await Cart.findOne({ user: userId });
-    if (!cart) return res.status(404).json({ message: "Cart not found" });
-
-    cart.items = [];
-    await cart.save();
-
-    res.status(200).json({ message: "Cart cleared", cart });
-  } catch (err) {
-    res.status(500).json({ message: "Failed to clear cart" });
   }
 };

@@ -165,7 +165,6 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
     const order = await Order.findById(orderId);
 
     if (!order) return res.status(404).json({ message: "Order not found" });
-    console.log(order.chefId.toString(), req.user._id.toString());
     if (order.chefId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Unauthorized" });
     }
