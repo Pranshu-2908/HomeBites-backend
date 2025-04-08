@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import Order from "../models/orderModel";
 import Meal from "../models/mealsModel";
 import { AuthRequest } from "../middleware/authMiddleware";
@@ -26,7 +26,7 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
     }
     const { meals, preferredTime } = req.body;
     const { hour, minute } = req.body.preferredTime;
-
+    console.log(meals);
     const now = new Date();
     const time = new Date(
       now.getFullYear(),
@@ -86,7 +86,7 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
       status: "pending",
       preferredTime,
     });
-
+    console.log(newOrder);
     res.status(201).json({ success: true, order: newOrder });
   } catch (error) {
     res
@@ -96,18 +96,14 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
 };
 
 // Get Orders (for Customer & Chef only)
-export const getOrders = async (req: AuthRequest, res: Response) => {
+export const getCustomerOrders = async (req: Request, res: Response) => {
   try {
     let orders;
-
-    // here only customer and chef can fetch orders of their own
-    if (req.user.role === "customer") {
-      orders = await Order.find({ customerId: req.user._id });
-    } else if (req.user.role === "chef") {
-      orders = await Order.find({ chefId: req.user._id });
-    } else {
-      return res.status(403).json({ success: false, message: "Unauthorized" });
-    }
+    const customerId = (req as AuthRequest).user._id;
+    orders = await Order.find({ customerId }).populate(
+      "meals.mealId",
+      "name price"
+    );
     res.status(200).json({ success: true, orders });
   } catch (error) {
     res
@@ -156,7 +152,6 @@ export const getChefOrdersByStatus = async (
     res.status(500).json({ message: "Error fetching orders", error });
   }
 };
-
 // Update Order Status (Chef Only)
 export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
   try {

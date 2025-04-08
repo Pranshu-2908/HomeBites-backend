@@ -2,7 +2,7 @@ import express from "express";
 import { protectRoute } from "../middleware/authMiddleware";
 import {
   placeOrder,
-  getOrders,
+  getCustomerOrders,
   getOrderById,
   updateOrderStatus,
   cancelOrder,
@@ -13,7 +13,7 @@ const router = express.Router();
 
 router
   .post("/", protectRoute as any, placeOrder as any)
-  .get("/", protectRoute as any, getOrders as any);
+  .get("/", protectRoute as any, getCustomerOrders as any);
 router.get("/chef", protectRoute as any, getChefOrdersByStatus as any);
 router
   .get("/:id", protectRoute as any, getOrderById as any)
