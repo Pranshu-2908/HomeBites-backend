@@ -11,6 +11,7 @@ export interface IMeal extends Document {
   preparationTime: number;
   availability: boolean;
   quantity: number;
+  averageRating: number;
   createdAt: Date;
 }
 
@@ -57,6 +58,10 @@ const MealSchema = new Schema<IMeal>(
       type: Number,
       required: true,
       min: 1,
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
     },
     availability: {
       type: Boolean,

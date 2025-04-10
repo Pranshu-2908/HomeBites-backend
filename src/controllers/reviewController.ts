@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import Review from "../models/reviewModel";
 import Order from "../models/orderModel";
 import { AuthRequest } from "../middleware/authMiddleware";
+import mongoose from "mongoose";
+import Meal from "../models/mealsModel";
 
 // Add a Review
 export const addReview = async (req: AuthRequest, res: Response) => {
@@ -32,11 +34,15 @@ export const addReview = async (req: AuthRequest, res: Response) => {
     let chefId = order.chefId.toString();
 
     let reviewsToSave = []; // array to save review of each meal
-
+    if (order.status !== "completed") {
+      return res
+        .status(403)
+        .json({ message: "You can review only after order is completed" });
+    }
     for (const mealReview of mealReviews) {
       const { mealId, rating, comment } = mealReview;
 
-      // is the meal in your order list?????
+      // is the meal in the order list or not?????
       const mealExists = order.meals.some(
         (meal) => meal.mealId.toString() === mealId
       );
@@ -46,7 +52,7 @@ export const addReview = async (req: AuthRequest, res: Response) => {
           .json({ message: `Meal ${mealId} was not in your order.` });
       }
 
-      // did you reviewed it before?????
+      // was it reviewed before?????
       const existingReview = await Review.findOne({
         orderId,
         customerId,
@@ -70,7 +76,26 @@ export const addReview = async (req: AuthRequest, res: Response) => {
     }
 
     await Review.insertMany(reviewsToSave);
+    // update the average rating in Meals schema
+    for (const review of reviewsToSave) {
+      const mealId = review.mealId;
 
+      const result = await Review.aggregate([
+        { $match: { mealId: new mongoose.Types.ObjectId(mealId) } },
+        {
+          $group: {
+            _id: "$mealId",
+            averageRating: { $avg: "$rating" },
+          },
+        },
+      ]);
+
+      const average = result[0]?.averageRating.toFixed(2) ?? 0;
+
+      await Meal.findByIdAndUpdate(mealId, { averageRating: average });
+    }
+    // update the reviewed status in Order schema
+    await Order.findByIdAndUpdate(orderId, { reviewed: true });
     res.status(201).json({
       success: true,
       message: "Reviews submitted successfully.",
@@ -92,7 +117,7 @@ export const getMealReviews = async (req: Request, res: Response) => {
 
     const reviews = await Review.find({ mealId }).populate(
       "customerId",
-      "name"
+      "name profilePicture"
     );
 
     res.status(200).json({
@@ -160,6 +185,21 @@ export const getChefAverageRating = async (req: Request, res: Response) => {
       averageRating: parseFloat(averageRating.toFixed(2)),
       totalReviews: reviews.length,
     });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// top-6 for landing page
+export const getTopRatedReviews = async (req: Request, res: Response) => {
+  try {
+    const topReviews = await Review.find()
+      .sort({ rating: -1, createdAt: -1 })
+      .limit(6)
+      .populate("customerId", "name profilePicture")
+      .populate("chefId", "name");
+
+    res.status(200).json({ success: true, reviews: topReviews });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
