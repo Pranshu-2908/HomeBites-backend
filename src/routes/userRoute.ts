@@ -1,7 +1,7 @@
 import express from "express";
 import { registerUser, loginUser, logout } from "../controllers/authController";
 import { AuthRequest, protectRoute } from "../middleware/authMiddleware";
-import { updateProfile } from "../controllers/userContoller";
+import { getAllChefs, updateProfile } from "../controllers/userContoller";
 import { singleUpload } from "../middleware/multerMiddleware";
 
 const router = express.Router();
@@ -19,4 +19,5 @@ router.patch(
   singleUpload,
   updateProfile as any
 );
+router.get("/chefs", getAllChefs);
 export default router;

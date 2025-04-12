@@ -28,8 +28,8 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       },
       customer_email: req.body.email,
       billing_address_collection: "required",
-      success_url: `http://localhost:3001/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `http://localhost:3001/payment-fail`,
+      success_url: `http://localhost:3002/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `http://localhost:3002/payment-fail`,
     });
     console.log(session.metadata);
     res.json({ url: session.url });

@@ -81,3 +81,12 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const getAllChefs = async (req: Request, res: Response) => {
+  try {
+    const chefs = await User.find({ role: "chef" }).select("-password");
+    res.status(200).json({ success: true, chefs });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
