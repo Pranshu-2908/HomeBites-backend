@@ -26,6 +26,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 connectDB();
 
+app.set("trust proxy", 1);
 // APP ROUTES
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/meal", mealRouter);

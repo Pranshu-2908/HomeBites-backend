@@ -39,7 +39,7 @@ export const registerUser = async (
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     };
     if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
     res.cookie("jwt", token, cookieOptions);
@@ -75,8 +75,8 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     const cookieOptions: CookieOptions = {
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production", // must be true on Render
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // "none" for cross-origin
     };
     if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
     res.cookie("jwt", token, cookieOptions);
@@ -111,8 +111,8 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
   res.cookie("jwt", "", {
     expires: new Date(0),
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production", // must be true on Render
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // "none" for cross-origin
   });
   res.status(200).json({
     success: true,
