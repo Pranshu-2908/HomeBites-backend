@@ -22,6 +22,7 @@ export interface IOrder extends Document {
     | "cancelled"
     | "rejected";
   reviewed: boolean;
+  paid: boolean;
   createdAt: Date;
   preferredTime: IPreferredTime;
   calculateTotalAmount(): Promise<number>;
@@ -82,6 +83,10 @@ const orderSchema = new Schema<IOrder>(
       default: "pending",
     },
     reviewed: {
+      type: Boolean,
+      default: false,
+    },
+    paid: {
       type: Boolean,
       default: false,
     },
