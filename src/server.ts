@@ -18,7 +18,7 @@ const PORT = process.env.PORT;
 // MIDDLEWARES
 app.use(
   cors({
-    origin: ["http://localhost:3002", "https://homebites.vercel.app/"],
+    origin: ["http://localhost:3002", "https://homebites.vercel.app"],
     credentials: true,
   })
 );
