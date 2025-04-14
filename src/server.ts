@@ -16,7 +16,12 @@ const app = express();
 const PORT = process.env.PORT;
 
 // MIDDLEWARES
-app.use(cors({ origin: "http://localhost:3002", credentials: true }));
+app.use(
+  cors({
+    origin: ["http://localhost:3002", "https://homebites.vercel.app/"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "development") {
