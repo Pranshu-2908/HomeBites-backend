@@ -28,8 +28,8 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       },
       customer_email: req.body.email,
       billing_address_collection: "required",
-      success_url: `http://https://homebites.vercel.app/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `http://https://homebites.vercel.app/payment-fail`,
+      success_url: `https://homebites.vercel.app/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://homebites.vercel.app/payment-fail`,
     });
     console.log(session.metadata);
     res.json({ url: session.url });
