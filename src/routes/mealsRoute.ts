@@ -7,6 +7,7 @@ import {
   updateMeal,
   deleteMeal,
   getChefMeals,
+  chefMeals,
 } from "../controllers/mealsController";
 import { arrayUpload } from "../middleware/multerMiddleware";
 
@@ -22,4 +23,6 @@ router
   .get("/:id", getMealById as any)
   .delete("/:id", protectRoute as any, deleteMeal as any)
   .put("/:id", protectRoute as any, arrayUpload, updateMeal as any);
+
+router.get("/chef/:chefId", chefMeals as any);
 export default router;

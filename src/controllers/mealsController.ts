@@ -142,6 +142,20 @@ export const getChefMeals = async (req: Request, res: Response) => {
     res.status(500).json({ sucess: false, message: error });
   }
 };
+export const chefMeals = async (req: Request, res: Response) => {
+  try {
+    const { chefId } = req.params;
+    const meals = await Meal.find({ chefId }).populate("chefId", "name");
+    if (!meals) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No meals found for this chef" });
+    }
+    res.status(200).json({ meals });
+  } catch (error) {
+    res.status(500).json({ sucess: false, message: error });
+  }
+};
 
 // (Only by the chef who posted it)
 export const deleteMeal = async (req: Request, res: Response) => {
