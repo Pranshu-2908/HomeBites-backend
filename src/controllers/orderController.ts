@@ -3,6 +3,7 @@ import Order from "../models/orderModel";
 import Meal from "../models/mealsModel";
 import { AuthRequest } from "../middleware/authMiddleware";
 import User from "../models/userModel";
+import { createNotification } from "./notificationController";
 
 const isWithinWorkingHours = (
   preferredTime: Date,
@@ -86,7 +87,10 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
       status: "pending",
       preferredTime,
     });
-    console.log(newOrder);
+    await createNotification(
+      chefId || "",
+      `You have a new order from ${req.user.name}`
+    );
     res.status(201).json({ success: true, order: newOrder });
   } catch (error) {
     res
@@ -172,6 +176,11 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
 
     order.status = status;
     await order.save();
+    await createNotification(
+      order.customerId.toString(),
+      `Your order status was updated to ${status}`
+    );
+
     res.status(200).json({ success: true, order });
   } catch (error) {
     res.status(500).json({ message: "Error updating order status", error });

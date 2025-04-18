@@ -9,13 +9,18 @@ import reviewRouter from "./routes/reviewRoutes";
 import cartRouter from "./routes/cartRoutes";
 import paymentRoutes from "./routes/paymentRoutes";
 import chefRoutes from "./routes/chefRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
 import connectDB from "./config/db";
 import cookieParser from "cookie-parser";
+import http from "http";
+import { Server } from "socket.io";
+import { setupSocket } from "./socket";
+
 dotenv.config({ path: "./.env" });
 
 const app = express();
 const PORT = process.env.PORT;
-
+const server = http.createServer(app);
 // MIDDLEWARES
 app.use(
   cors({
@@ -23,6 +28,7 @@ app.use(
     credentials: true,
   })
 );
+
 app.use(express.json());
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "development") {
@@ -33,6 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 connectDB();
 
 app.set("trust proxy", 1);
+
 // APP ROUTES
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/meal", mealRouter);
@@ -41,8 +48,9 @@ app.use("/api/v1/review", reviewRouter);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/chef", chefRoutes);
-
+app.use("/api/v1/notifications", notificationRoutes);
+setupSocket(server);
 // SERVER
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
