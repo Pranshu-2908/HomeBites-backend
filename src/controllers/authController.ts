@@ -75,12 +75,11 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     const cookieOptions: CookieOptions = {
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // must be true on Render
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // "none" for cross-origin
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     };
     if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
     res.cookie("jwt", token, cookieOptions);
-    // console.log("🔹 Cookies Sent:", res.getHeaders()["set-cookie"]);
     res.status(201).json({
       success: true,
       user: {

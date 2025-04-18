@@ -98,7 +98,6 @@ export const addToCart = async (req: Request, res: Response) => {
       cart.items.push(newItem);
       updatedItem = newItem;
     }
-    console.log(updatedItem);
     await cart.save();
     res
       .status(200)

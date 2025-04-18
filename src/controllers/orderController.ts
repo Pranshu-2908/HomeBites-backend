@@ -27,7 +27,6 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
     }
     const { meals, preferredTime } = req.body;
     const { hour, minute } = req.body.preferredTime;
-    console.log(meals);
     const now = new Date();
     const time = new Date(
       now.getFullYear(),

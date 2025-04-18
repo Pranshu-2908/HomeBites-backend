@@ -18,7 +18,6 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       },
       quantity: item.quantity,
     }));
-    console.log(req.body.orderId);
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
@@ -31,7 +30,6 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       success_url: `https://homebites.vercel.app/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `https://homebites.vercel.app/payment-fail`,
     });
-    console.log(session.metadata);
     res.json({ url: session.url });
   } catch (error: any) {
     console.error(error);
@@ -44,9 +42,7 @@ export const getCheckoutSession = async (req: Request, res: Response) => {
     const session = await stripe.checkout.sessions.retrieve(
       req.params.sessionId
     );
-    console.log(req.params.sessionId);
     const orderId = session.metadata?.orderId;
-    console.log(orderId);
     if (!orderId) {
       return res
         .status(404)

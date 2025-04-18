@@ -28,7 +28,6 @@ export const getChefStats = async (req: Request, res: Response) => {
       { $group: { _id: null, totalAmount: { $sum: "$totalAmount" } } },
     ]);
 
-    console.log(revenueAgg);
     const revenue = revenueAgg[0]?.totalAmount || 0;
 
     const topMeal = await Order.aggregate([
@@ -92,9 +91,6 @@ const OrderTrends = async (chefId: string) => {
   const startDate = moment().subtract(5, "days");
   const chefObjectId = new mongoose.Types.ObjectId(chefId);
 
-  console.log(chefObjectId);
-  console.log(startDate.toDate());
-  console.log(endDate.toDate());
   const orderTrends = await Order.aggregate([
     {
       $match: {
@@ -126,16 +122,13 @@ const OrderTrends = async (chefId: string) => {
       $sort: { _id: 1 },
     },
   ]);
-  console.log(orderTrends);
   const result: { date: string; orders: number }[] = [];
 
   for (let i = 0; i < 5; i++) {
     const date = moment()
       .subtract(4 - i, "days")
       .format("MMM DD");
-    console.log(date);
     const found = orderTrends.find((entry) => entry._id === date);
-    console.log(found);
     result.push({ date, orders: found ? found.orders : 0 });
   }
 
