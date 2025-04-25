@@ -5,9 +5,9 @@ import getDataUri from "../utils/dataURI";
 import cloudinary from "../utils/cloudinary";
 
 // Update User Profile
-export const updateProfile = async (req: AuthRequest, res: Response) => {
+export const updateProfile = async (req: Request, res: Response) => {
   try {
-    const userId = req.user._id;
+    const userId = (req as AuthRequest).user._id;
     const {
       name,
       phoneNumber,
@@ -18,6 +18,11 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       startMinute,
       endHour,
       endMinute,
+      addressLine,
+      city,
+      state,
+      pincode,
+      coordinates,
     } = req.body;
     let profilePicture;
     const updateFields: any = {};
@@ -42,8 +47,30 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
         ...(endMinute !== undefined && { endMinute: Number(endMinute) }),
       };
     }
+
+    if (addressLine || city || state || pincode || coordinates) {
+      let parsedCoordinates = {};
+
+      if (typeof coordinates === "string") {
+        try {
+          parsedCoordinates = JSON.parse(coordinates);
+        } catch (err) {
+          console.error("Failed to parse coordinates:", err);
+        }
+      }
+      updateFields.address = {
+        ...(addressLine && { addressLine }),
+        ...(city && { city }),
+        ...(state && { state }),
+        ...(pincode && { pincode }),
+        ...(parsedCoordinates && {
+          coordinates: parsedCoordinates,
+        }),
+      };
+    }
+
     if (req.file) {
-      const file = getDataUri(req.file); // convert to base64 Data URI
+      const file = getDataUri(req.file);
       const cloudinaryResponse = await cloudinary.uploader.upload(
         file.content!,
         {
@@ -88,5 +115,45 @@ export const getAllChefs = async (req: Request, res: Response) => {
     res.status(200).json({ success: true, chefs });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// update only coordinates
+export const updateUserLocation = async (req: Request, res: Response) => {
+  try {
+    const { latitude, longitude } = req.body;
+    const userId = (req as AuthRequest).user.id;
+
+    if (!latitude || !longitude) {
+      return res.status(400).json({ message: "Coordinates missing" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, {
+      "address.coordinates.lat": latitude,
+      "address.coordinates.lng": longitude,
+    });
+
+    res
+      .status(200)
+      .json({ message: "User location updated", user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+};
+
+export const incrementOnboardingStep = async (req: Request, res: Response) => {
+  const userId = (req as AuthRequest).user.id;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.onBoardingSteps = (user.onBoardingSteps || 0) + 1;
+    await user.save();
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update onboarding step" });
   }
 };

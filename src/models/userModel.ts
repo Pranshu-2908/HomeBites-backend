@@ -12,12 +12,23 @@ export interface IUser extends mongoose.Document {
   bio?: string;
   certifications?: string[];
   profilePicture?: string;
+  address?: {
+    addressLine: string;
+    city: string;
+    state: string;
+    pincode: string;
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
   workingHours?: {
     startHour: number;
     startMinute: number;
     endHour: number;
     endMinute: number;
   };
+  onBoardingSteps: number;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -43,6 +54,16 @@ const UserSchema = new mongoose.Schema(
     },
     phoneNumber: String,
     location: String,
+    address: {
+      addressLine: { type: String },
+      city: { type: String },
+      state: { type: String },
+      pincode: { type: String },
+      coordinates: {
+        lat: { type: Number },
+        lng: { type: Number },
+      },
+    },
     bio: String,
     certifications: [String],
     profilePicture: String,
@@ -59,6 +80,10 @@ const UserSchema = new mongoose.Schema(
       endMinute: {
         type: Number,
       },
+    },
+    onBoardingSteps: {
+      type: Number,
+      default: 0,
     },
   },
   {
