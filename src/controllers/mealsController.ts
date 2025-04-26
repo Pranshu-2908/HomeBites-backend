@@ -61,7 +61,10 @@ export const createMeal = async (req: Request, res: Response) => {
 // all access
 export const getAllMeals = async (req: Request, res: Response) => {
   try {
-    const meals = await Meal.find().populate("chefId", "name address");
+    const meals = await Meal.find().populate(
+      "chefId",
+      "name address workingHours"
+    );
     res.status(200).json({ meals });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -147,7 +150,7 @@ export const chefMeals = async (req: Request, res: Response) => {
     const { chefId } = req.params;
     const meals = await Meal.find({ chefId }).populate(
       "chefId",
-      "name address"
+      "name address workingHours"
     );
     if (!meals) {
       return res

@@ -5,6 +5,7 @@ interface Inotification {
   userId: Schema.Types.ObjectId;
   message: string;
   read: boolean;
+  readAt: Date | null;
   createdAt: Date;
 }
 
@@ -17,6 +18,7 @@ const notificationSchema = new mongoose.Schema(
     },
     message: { type: String, required: true },
     read: { type: Boolean, default: false },
+    readAt: { type: Date, default: null },
     createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }

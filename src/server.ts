@@ -13,8 +13,8 @@ import notificationRoutes from "./routes/notificationRoutes";
 import connectDB from "./config/db";
 import cookieParser from "cookie-parser";
 import http from "http";
-import { Server } from "socket.io";
 import { setupSocket } from "./socket";
+import "./utils/deleteNotification";
 
 dotenv.config({ path: "./.env" });
 

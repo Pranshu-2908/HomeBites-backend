@@ -36,7 +36,7 @@ export const markNotificationAsRead = async (req: Request, res: Response) => {
   try {
     const notification = await Notification.findByIdAndUpdate(
       id,
-      { read: true },
+      { read: true, readAt: new Date() },
       { new: true }
     );
     res.status(200).json(notification);
