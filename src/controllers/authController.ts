@@ -5,7 +5,7 @@ import { AuthRequest } from "../middleware/authMiddleware";
 
 const generateToken = (userId: string) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET || "", {
-    expiresIn: "30d",
+    expiresIn: "1d",
   });
 };
 
@@ -36,7 +36,7 @@ export const registerUser = async (
     }
     const token = generateToken(user._id.toString());
     const cookieOptions: CookieOptions = {
-      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
@@ -73,7 +73,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     }
     const token = generateToken(user._id.toString());
     const cookieOptions: CookieOptions = {
-      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",

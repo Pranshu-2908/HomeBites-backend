@@ -142,7 +142,6 @@ export const getOrderTrends = async (req: Request, res: Response) => {
     const trends = await OrderTrends(chefId);
     res.json(trends);
   } catch (error) {
-    console.error("Error fetching order trends", error);
     res.status(500).json({ message: "Error fetching order trends" });
   }
 };

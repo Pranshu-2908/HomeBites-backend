@@ -25,8 +25,6 @@ export interface IOrder extends Document {
   paid: boolean;
   createdAt: Date;
   preferredTime: IPreferredTime;
-  calculateTotalAmount(): Promise<number>;
-  updateStatus(newStatus: string): Promise<void>;
 }
 
 const orderSchema = new Schema<IOrder>(
@@ -97,38 +95,6 @@ const orderSchema = new Schema<IOrder>(
   },
   { timestamps: true }
 );
-
-orderSchema.methods.calculateTotalAmount = async function (): Promise<number> {
-  let total = 0;
-  for (const item of this.meals) {
-    const meal = await Meal.findById(item.mealId);
-    if (meal) {
-      total += meal.price * item.quantity;
-    }
-  }
-  this.totalAmount = total;
-  await this.save();
-  return total;
-};
-
-orderSchema.methods.updateStatus = async function (
-  newStatus: string
-): Promise<void> {
-  if (
-    ![
-      "pending",
-      "accepted",
-      "preparing",
-      "completed",
-      "cancelled",
-      "rejected",
-    ].includes(newStatus)
-  ) {
-    throw new Error("Invalid status update");
-  }
-  this.status = newStatus;
-  await this.save();
-};
 
 const Order: Model<IOrder> = mongoose.model<IOrder>("Order", orderSchema);
 

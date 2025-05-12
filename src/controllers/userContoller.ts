@@ -55,7 +55,6 @@ export const updateProfile = async (req: Request, res: Response) => {
         try {
           parsedCoordinates = JSON.parse(coordinates);
         } catch (err) {
-          console.error("Failed to parse coordinates:", err);
         }
       }
       updateFields.address = {

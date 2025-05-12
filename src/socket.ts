@@ -24,9 +24,7 @@ const setupSocket = (server: any) => {
     socket.on("markNotificationsAsRead", (userId) => {
       // Here, you would update the database to mark all notifications as read
       Notification.updateMany({ userId, read: false }, { read: true })
-        .then(() => {
-          console.log("Notifications marked as read");
-        })
+        .then(() => {})
         .catch((err) => {
           console.error("Error marking notifications as read", err);
         });
