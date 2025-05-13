@@ -3,6 +3,7 @@ import User from "../models/userModel";
 import { AuthRequest } from "../middleware/authMiddleware";
 import getDataUri from "../utils/dataURI";
 import cloudinary from "../utils/cloudinary";
+import Meal from "../models/mealsModel";
 
 // Update User Profile
 export const updateProfile = async (req: Request, res: Response) => {
@@ -54,8 +55,7 @@ export const updateProfile = async (req: Request, res: Response) => {
       if (typeof coordinates === "string") {
         try {
           parsedCoordinates = JSON.parse(coordinates);
-        } catch (err) {
-        }
+        } catch (err) {}
       }
       updateFields.address = {
         ...(addressLine && { addressLine }),
@@ -111,7 +111,27 @@ export const updateProfile = async (req: Request, res: Response) => {
 export const getAllChefs = async (req: Request, res: Response) => {
   try {
     const chefs = await User.find({ role: "chef" }).select("-password");
-    res.status(200).json({ success: true, chefs });
+    const chefsWithRatings = await Promise.all(
+      chefs.map(async (chef) => {
+        const meals = await Meal.find({ chefId: chef._id });
+        const ratings = meals
+          .map((meal) => Number(meal.averageRating))
+          .filter((r) => !isNaN(r) && r > 0);
+
+        const averageRating =
+          ratings.length > 0
+            ? Number(
+                (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+              )
+            : null;
+
+        return {
+          ...chef.toObject(),
+          averageRating,
+        };
+      })
+    );
+    res.status(200).json({ success: true, chefs: chefsWithRatings });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
