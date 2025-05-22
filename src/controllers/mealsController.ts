@@ -3,6 +3,7 @@ import Meal from "../models/mealsModel";
 import { AuthRequest } from "../middleware/authMiddleware";
 import getDataUri from "../utils/dataURI";
 import cloudinary from "../utils/cloudinary";
+import Order from "../models/orderModel";
 
 // (chefs)
 export const createMeal = async (req: Request, res: Response) => {
@@ -187,5 +188,40 @@ export const deleteMeal = async (req: Request, res: Response) => {
       .json({ success: true, message: "Meal deleted successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+export const getPastMeals = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as AuthRequest).user.id;
+
+    // Step 1: Get all orders by this user
+    const orders = await Order.find({ customerId: userId }).sort({
+      createdAt: -1,
+    });
+
+    // Step 2: Extract unique mealIds
+    const mealIdSet = new Set<string>();
+    orders.forEach((order) => {
+      order.meals.forEach((meal) => {
+        if (meal.mealId) {
+          mealIdSet.add(meal.mealId.toString());
+        }
+      });
+    });
+
+    const uniqueMealIds = Array.from(mealIdSet);
+
+    if (uniqueMealIds.length === 0) {
+      return res.status(200).json([]); // No past meals
+    }
+
+    // Step 3: Fetch meals from Meal model using those unique IDs
+    const pastMeals = await Meal.find({ _id: { $in: uniqueMealIds } });
+
+    return res.status(200).json({ pastMeals });
+  } catch (error) {
+    console.error("Error fetching past meals:", error);
+    res.status(500).json({ message: "Server error fetching past meals." });
   }
 };

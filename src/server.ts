@@ -9,6 +9,7 @@ import reviewRouter from "./routes/reviewRoutes";
 import cartRouter from "./routes/cartRoutes";
 import paymentRoutes from "./routes/paymentRoutes";
 import chefRoutes from "./routes/chefRoutes";
+import chatbotRoute from "./routes/ChatbotRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import connectDB from "./config/db";
 import cookieParser from "cookie-parser";
@@ -48,6 +49,8 @@ app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/chef", chefRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/chatbot", chatbotRoute);
+
 setupSocket(server);
 // SERVER
 server.listen(PORT, () => {
