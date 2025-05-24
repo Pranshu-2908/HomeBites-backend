@@ -10,6 +10,7 @@ import cartRouter from "./routes/cartRoutes";
 import paymentRoutes from "./routes/paymentRoutes";
 import chefRoutes from "./routes/chefRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
+import chatbotRoute from "./routes/chatBotRoute";
 import connectDB from "./config/db";
 import cookieParser from "cookie-parser";
 import http from "http";
@@ -48,7 +49,7 @@ app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/chef", chefRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
-
+app.use("/api/v1/agent", chatbotRoute);
 setupSocket(server);
 // SERVER
 server.listen(PORT, () => {
