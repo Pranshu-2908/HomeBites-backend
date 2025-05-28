@@ -4,6 +4,19 @@ import Meal from "../models/mealsModel";
 import Order from "../models/orderModel";
 import moment from "moment";
 import mongoose from "mongoose";
+import User from "../models/userModel";
+
+export const getChefById = async (req: Request, res: Response) => {
+  try {
+    const chef = await User.findById(req.params.id).select("-password");
+    if (!chef) {
+      return res.status(404).json({ message: "Chef not found" });
+    }
+    res.status(200).json(chef);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
 
 export const getChefStats = async (req: Request, res: Response) => {
   try {
