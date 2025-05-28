@@ -17,7 +17,7 @@ const router = express.Router();
 // Meal Routes
 router
   .post("/", protectRoute as any, arrayUpload, createMeal as any)
-  .get("/", getAllMeals);
+  .get("/", getAllMeals as any);
 router.get("/chef", protectRoute as any, getChefMeals as any);
 router.get("/pastOrderMeals", protectRoute as any, getPastMeals as any);
 router

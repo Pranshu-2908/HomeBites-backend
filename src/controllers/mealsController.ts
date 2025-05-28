@@ -61,11 +61,41 @@ export const createMeal = async (req: Request, res: Response) => {
 // all access
 export const getAllMeals = async (req: Request, res: Response) => {
   try {
-    const meals = await Meal.find().populate(
-      "chefId",
-      "name address workingHours"
-    );
-    res.status(200).json({ meals });
+    const {
+      name = "",
+      cuisine = "",
+      category = "",
+      time = "",
+      page = "1",
+      limit = "6",
+    } = req.query;
+
+    const currentPage = parseInt(page as string) || 1;
+    const itemsPerPage = parseInt(limit as string) || 6;
+
+    // Build query object
+    const query: any = {};
+
+    if (name) query.name = { $regex: name, $options: "i" };
+    if (cuisine) query.cuisine = { $regex: cuisine, $options: "i" };
+    if (category) query.category = { $regex: category, $options: "i" };
+    if (time) query.preparationTime = { $lte: parseInt(time as string) };
+
+    // Count total matching meals
+    const totalMeals = await Meal.countDocuments(query);
+
+    const meals = await Meal.find(query)
+      .populate("chefId", "name address workingHours")
+      .skip((currentPage - 1) * itemsPerPage)
+      .limit(itemsPerPage);
+
+    const totalPages = Math.ceil(totalMeals / itemsPerPage);
+
+    res.status(200).json({
+      meals,
+      currentPage,
+      totalPages,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
